@@ -14,6 +14,8 @@ export class NoteListService {
 
     // @ts-ignore
     items$;
+    // @ts-ignore
+    items;
     firestore: Firestore = inject(Firestore);
 
     unsubList;
@@ -33,16 +35,16 @@ export class NoteListService {
         this.unsubList();
 
         this.items$ = collectionData(this.getNotesRef());
-        this.items$ = this.items$.subscribe( (list: any[]) => {
+        this.items = this.items$.subscribe( (list: any[]) => {
             list.forEach(element => {
                 console.log(element);
             });
         })
     }
 
-    ngOnDestroy() {
-        this.items$.unsubscribe();
+    ngonDestroy() {
         this.unsubList();
+        this.items.unsubscribe();
     }
 
     //itemCollection = collection(this.firestore, 'items');
