@@ -12,46 +12,53 @@ export class NoteListService {
     trashNotes: Note[] = [];
     normalNotes: Note[] = [];
 
-    // @ts-ignore
-    items$;
-    // @ts-ignore
-    items;
     firestore: Firestore = inject(Firestore);
 
-    unsubList;
-    unsubSingle;
+    unsubNotes;
+    unsubTrash;
 
     constructor() {
-        this.unsubList = onSnapshot(this.getNotesRef(), (list) => {
-            list.forEach(element => {
-                console.log(element);
-            });
-        });
-
-        this.unsubSingle = onSnapshot(this.getSingleDoc("notes", "a65465s4dfsd654654"), (element) => {
-        });
-
-        this.unsubSingle();
-        this.unsubList();
-
-        this.items$ = collectionData(this.getNotesRef());
-        this.items = this.items$.subscribe( (list: any[]) => {
-            list.forEach(element => {
-                console.log(element);
-            });
-        })
+        this.unsubNotes = this.subNotesList();
+        this.unsubTrash = this.subTrashList();
     }
 
     ngonDestroy() {
-        this.unsubList();
-        this.items.unsubscribe();
+        this.unsubNotes();
+        this.unsubTrash();
     }
 
-    //itemCollection = collection(this.firestore, 'items');
+    subTrashList() {
+        this.trashNotes = [];
+        return onSnapshot(this.getTrashRef(), (list) => {
+            list.forEach(element => {
+                this.trashNotes.push(this.setNoteObject(element.data(), element.id));
+            });
+        });
+    }
+
+    subNotesList() {
+        this.normalNotes = [];
+        return onSnapshot(this.getNotesRef(), (list) => {
+            list.forEach(element => {
+                this.normalNotes.push(this.setNoteObject(element.data(), element.id));
+            });
+        });
+    }
+
+    setNoteObject(obj: any, id: string): Note {
+        return {
+            id: id || "",
+            type: obj.type || "note",
+            title: obj.title || "",
+            content: obj.content || "",
+            marked: obj.marked || false
+        }
+    }
 
     getNotesRef() {
         return collection(this.firestore, 'notes');
     }
+
 
     getTrashRef() {
         return collection(this.firestore, 'trash');
