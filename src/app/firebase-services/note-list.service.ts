@@ -1,8 +1,12 @@
 import {inject, Injectable} from '@angular/core';
-import {Firestore, collection, doc, collectionData, onSnapshot} from '@angular/fire/firestore';
+import {Firestore, collection, doc, collectionData, onSnapshot, addDoc} from '@angular/fire/firestore';
 import {Observable} from 'rxjs';
 import {Note} from "../interfaces/note.interface";
+import {DocumentData} from "@angular/fire/compat/firestore";
 
+
+class WithFieldValue<T> {
+}
 
 @Injectable({
     providedIn: 'root'
@@ -16,10 +20,22 @@ export class NoteListService {
 
     unsubNotes;
     unsubTrash;
+    private item: WithFieldValue<DocumentData> | undefined;
 
     constructor() {
         this.unsubNotes = this.subNotesList();
         this.unsubTrash = this.subTrashList();
+    }
+
+    async addNote(item: Note) {
+        await addDoc(this.getNotesRef(), this.item).catch(
+            (err) => {
+                console.error(err);
+            }
+        ) .then(
+            (docRef) => {console.log("Document written with ID: ", docRef?.id);}
+        )
+
     }
 
     ngonDestroy() {
@@ -68,3 +84,7 @@ export class NoteListService {
         return doc(collection(this.firestore, colId), docId);
     }
 }
+function then(): any {
+    throw new Error('Function not implemented.');
+}
+
