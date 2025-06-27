@@ -27,15 +27,13 @@ export class NoteListService {
         this.unsubTrash = this.subTrashList();
     }
 
-    async addNote(item: Note) {
-        await addDoc(this.getNotesRef(), this.item).catch(
-            (err) => {
-                console.error(err);
-            }
-        ) .then(
-            (docRef) => {console.log("Document written with ID: ", docRef?.id);}
-        )
-
+    async addNote(note: Note) {
+        try {
+            return await addDoc(this.getNotesRef(), note);
+        } catch (error) {
+            console.error("Fehler beim Hinzufügen der Note:", error);
+            throw error;
+        }
     }
 
     ngonDestroy() {
@@ -84,6 +82,7 @@ export class NoteListService {
         return doc(collection(this.firestore, colId), docId);
     }
 }
+
 function then(): any {
     throw new Error('Function not implemented.');
 }
