@@ -1,5 +1,5 @@
 import {inject, Injectable} from '@angular/core';
-import {Firestore, collection, doc, collectionData, onSnapshot, addDoc} from '@angular/fire/firestore';
+import {Firestore, collection, doc, collectionData, onSnapshot, addDoc, updateDoc} from '@angular/fire/firestore';
 import {Observable} from 'rxjs';
 import {Note} from "../interfaces/note.interface";
 import {DocumentData} from "@angular/fire/compat/firestore";
@@ -25,6 +25,34 @@ export class NoteListService {
     constructor() {
         this.unsubNotes = this.subNotesList();
         this.unsubTrash = this.subTrashList();
+    }
+
+    async updateNote(note: Note) {
+        if (note.id) {
+            let docRef = this.getSingleDocRef(this.getColIdFromNote(note), note.id);
+            await updateDoc(docRef, this.getCleanJson(note)).catch(
+                (error) => {
+                    console.log("Fehler beim Aktualisieren der Note:", error);
+                }
+            );
+        }
+    }
+
+    getCleanJson(note: Note): { } {
+        return {
+            type: note.type,
+            title: note.title ,
+            content: note.content,
+            marked: note.marked,
+        };
+    }
+
+    getColIdFromNote(note: Note): string {
+        if (note.type === "note") {
+            return "notes";
+        } else {
+            return "trash";
+        }
     }
 
     async addNote(note: Note) {
@@ -78,7 +106,7 @@ export class NoteListService {
         return collection(this.firestore, 'trash');
     }
 
-    getSingleDoc(colId: string, docId: string) {
+    getSingleDocRef(colId: string, docId: string) {
         return doc(collection(this.firestore, colId), docId);
     }
 }
